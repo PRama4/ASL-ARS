@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time ASL Alphabet Recognition & TTS</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #ccf2ff 0%, #ffffff 100%);
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+        }
+        .container {
+            background: #fff;
+            max-width: 480px;
+            margin: 48px auto 0 auto;
+            border-radius: 14px;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.13);
+            padding: 44px 36px 38px 36px;
+            text-align: center;
+        }
+        .main-heading {
+            color: #0077b6;
+            font-size: 2.2rem;
+            margin: 0 0 12px 0;
+            letter-spacing: 0.4px;
+        }
+        .subtitle {
+            font-size: 1.16rem;
+            color: #496d8d;
+            margin-bottom: 24px;
+        }
+        .start-btn, .action-btn {
+            padding: 15px 45px;
+            font-size: 1.13rem;
+            color: #fff;
+            background: linear-gradient(90deg,#00b4d8,#0077b6);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 24px 8px 20px 8px;
+            transition: background .2s;
+            box-shadow: 0 2px 13px rgba(0,135,227,0.07);
+        }
+        .start-btn:hover, .action-btn:hover {
+            background: linear-gradient(90deg,#0096c7,#0077b6);
+        }
+        .hidden { display: none!important; }
+        .video-frame {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+        .video-frame video {
+            border-radius: 9px;
+            width: 328px;
+            height: 248px;
+            background: #e1e6ec;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+        .result-card {
+            background: #f5fbff;
+            margin-top: 22px;
+            padding: 18px 32px;
+            border-radius: 8px;
+            border-left: 6px solid #00b4d8;
+            font-size: 1.15rem;
+            color: #185875;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            min-height: 47px;
+        }
+        .instructions {
+            color: #30606e;
+            margin-bottom: 18px;
+            font-size: 1.05rem;
+            background: #e5f5f8;
+            padding: 13px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        @media (max-width: 700px) {
+            .container { max-width: 98vw; padding: 15px; }
+            .video-frame video { width: 94vw; height: 38vw; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Welcome section -->
+    <div id="landing-section">
+        <h1 class="main-heading">Welcome to Sign Language Translator</h1>
+        <div class="subtitle">
+            Instantly recognize American Sign Language letters via webcam and hear them spoken aloud!
+        </div>
+        <button class="start-btn" onclick="showCameraSection()">Continue</button>
+    </div>
+
+    <!-- Camera & Prediction section -->
+    <div id="camera-section" class="hidden">
+        <div class="instructions">
+            <b>Instructions:</b><br>
+            Step 1: Click <b>Start Camera</b> to enable your webcam.<br>
+            Step 2: Show a single sign clearly.<br>
+            Step 3: Click <b>Capture Sequence</b> to get the predicted letter and audio.
+        </div>
+        <div class="video-frame">
+            <video id="videoElement" width="328" height="248" autoplay class="hidden"></video>
+        </div>
+        <button class="action-btn" id="startCameraBtn" onclick="startCamera()">Start Camera</button>
+        <button class="action-btn hidden" id="captureBtn" onclick="captureSequence()" disabled>Capture Sequence</button>
+        <div class="result-card" id="resultCard" style="margin-top:22px;">
+            Prediction: <span id="predictionText">Waiting...</span><br>
+            Confidence: <span id="confidenceText">-</span>
+        </div>
+    </div>
+</div>
+<script>
+function showCameraSection() {
+    document.getElementById('landing-section').classList.add('hidden');
+    document.getElementById('camera-section').classList.remove('hidden');
+}
+
+let videoStream;
+const video = document.getElementById("videoElement");
+const startCameraBtn = document.getElementById("startCameraBtn");
+const captureBtn = document.getElementById("captureBtn");
+
+function startCamera() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            videoStream = stream;
+            video.srcObject = stream;
+            video.classList.remove('hidden');
+            startCameraBtn.disabled = true;
+            startCameraBtn.innerText = "Camera On";
+            captureBtn.disabled = false;
+            captureBtn.classList.remove('hidden');
+        })
+        .catch(() => {
+            alert("Unable to access webcam!");
+        });
+}
+
+function captureFrame() {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    return canvas.toDataURL('image/jpeg');
+}
+
+function captureSequence() {
+    const totalFrames = 5;
+    let capturedFrames = 0;
+    document.getElementById('predictionText').innerText = "Capturing sequence...";
+    document.getElementById('confidenceText').innerText = "";
+
+    function sendFrame() {
+        const imgData = captureFrame();
+        fetch('/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imgData })
+        })
+        .then(response => response.json())
+        .then(data => {
+            capturedFrames++;
+            if (capturedFrames === totalFrames) {
+                document.getElementById('predictionText').innerText = data.text;
+                if (data.confidence && data.confidence > 0) {
+                    document.getElementById('confidenceText').innerText = (data.confidence * 100).toFixed(2) + "%";
+                } else {
+                    document.getElementById('confidenceText').innerText = "-";
+                }
+                if(data.audio){
+                    const audio = new Audio("data:audio/mp3;base64," + data.audio);
+                    audio.play();
+                }
+            } else {
+                setTimeout(sendFrame, 200);
+            }
+        })
+        .catch(error => {
+            document.getElementById('predictionText').innerText = "Error: " + error;
+            document.getElementById('confidenceText').innerText = "-";
+        });
+    }
+    sendFrame();
+}
+</script>
+</body>
+</html>

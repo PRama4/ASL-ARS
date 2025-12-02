@@ -1,0 +1,13 @@
+# Project dependencies for ASL project
+# Notes:
+# - Use `tensorflow` or `tensorflow-cpu` depending on your machine (GPU users may prefer a GPU-enabled build).
+# - Pin versions as needed for your environment; these are minimum recommended versions.
+
+Flask>=2.0.0,<3.0.0
+numpy>=1.21.0
+Pillow>=9.0.0
+tensorflow>=2.10.0
+gTTS>=2.2.3
+
+# Optional / alternative (uncomment one if needed):
+# tensorflow-cpu>=2.10.0  # Use this on machines without a compatible GPU

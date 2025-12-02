@@ -1,0 +1,116 @@
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+~$*
+
+# Windows OneDrive temp
+~$*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Virtual environments
+env/
+venv/
+ENV/
+.venv/
+.ENV/
+venv.bak/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.eggs/
+pip-wheel-metadata/
+*.whl
+
+# PyInstaller
+*.spec
+
+# Unit test / coverage
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# VS Code / IDEs
+.vscode/
+.history/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs and tmp
+*.log
+logs/
+debug.log
+tmp/
+temp/
+
+# Databases
+*.sqlite3
+*.db
+
+# Secrets / env
+.env
+.env.*
+credentials.json
+secrets.json
+*.pem
+*.key
+
+# Model artifacts / ML outputs
+models/
+saved_models/
+checkpoints/
+weights/
+*.h5
+*.hdf5
+*.pth
+*.pt
+*.ckpt
+*.tflite
+
+# Dataset / large files (exclude by default; track only small metadata)
+data/
+dataset/
+datasets/
+raw_data/
+processed_data/
+*.npz
+*.npy
+*.csv
+*.tar
+*.gz
+*.zip
+*.tar.gz
+*.rar
+
+# TensorBoard / ML runs
+runs/
+tensorboard/
+events.out.tfevents.*
+
+# Build tools
+node_modules/
+bower_components/
+
+# Misc
+*.bak
+*.orig
+*.swp
+*.retry
+.idea/
